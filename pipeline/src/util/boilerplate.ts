@@ -1,0 +1,21 @@
+
+export const appBoilerplate = [
+  `import dotenv from "dotenv"`,
+  `dotenv.config()\n`,
+  `import mongoose from "mongoose"`,
+  `mongoose.connect(process.env.DB!)`,
+  `.then(()=>console.log("Auth - Database is running"))`,
+  `.catch(()=>console.log("Auth - Failed to connect with database"))\n`,
+  `import express, { Request, Response } from "express"`,
+  `import morgan from "morgan"`,
+  `import cors from "cors"`,
+  `const app = express()`,
+  `app.listen(process.env.PORT, ()=>console.log("Auth service is running on - http://localhost:4000"))\n`,
+  `app.use(cors({`,
+  `\torigin: process.env.CLIENT,`,
+  `\tcredentials: true`,
+  `}))`,
+  `app.use(express.json())`,
+  `app.use(express.urlencoded({extended: false}))`,
+  `app.use(morgan('dev'))\n`,
+];
