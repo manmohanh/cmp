@@ -9,6 +9,7 @@ const getServiceInPascalCase = (service: string) => {
 };
 
 export const appBoilerplate = (service: string, port: number) => {
+    const Provider = getServiceInPascalCase(service)
   return [
     `import dotenv from "dotenv"`,
     `dotenv.config()\n`,
@@ -17,11 +18,11 @@ export const appBoilerplate = (service: string, port: number) => {
     `.then(()=>console.log("${service} - Database is running"))`,
     `.catch(()=>console.log("${service} - Failed to connect with database"))\n`,
     `import express, { Request, Response } from "express"`,
-   ` import ${getServiceInPascalCase(service)}Router from "./${service}.router.ts"`,
+    ` import ${Provider}Router from "./${service}.router"`,
     `import morgan from "morgan"`,
     `import cors from "cors"`,
     `const app = express()`,
-    `app.listen(process.env.PORT, ()=>console.log("${service} service is running on port:${port}"))\n`,
+    `app.listen(process.env.PORT, ()=>console.log("${service} service is running on - http://localhost:${port}/${service}"))\n`,
     `app.use(cors({`,
     `\torigin: process.env.CLIENT,`,
     `\tcredentials: true`,
@@ -29,19 +30,40 @@ export const appBoilerplate = (service: string, port: number) => {
     `app.use(express.json())`,
     `app.use(express.urlencoded({extended: false}))`,
     `app.use(morgan('dev'))\n`,
-    `app.use("/${service}",${getServiceInPascalCase(service)}Router)`
+    `app.use("/${service}",${Provider}Router)`,
   ].join("\n");
 };
 
 export const routerBoilerplate = (service: string) => {
+  const Provider = getServiceInPascalCase(service)
   return [
     `import {Router,Request,Response} from "express"`,
-    `const ${getServiceInPascalCase(service)}Router = Router()\n`,
-    `${getServiceInPascalCase(
-      service
-    )}Router.get("/",(req:Request,res:Response)=>{`,
+    `const ${Provider}Router = Router()\n`,
+    `${Provider}Router.get("/",(req:Request,res:Response)=>{`,
     `\tres.json({message:"Hello from ${service} service"})`,
     `})\n`,
-    `export default ${getServiceInPascalCase(service)}Router;`,
+    `export default ${Provider}Router;`,
+  ].join("\n");
+};
+
+export const interfaceBoilerplate = (service: string) => {
+  const Provider = getServiceInPascalCase(service)
+  return [
+    `import { Document } from "mongoose";\n`,
+    `export interface ${Provider}ModelInterface extends Document {\n`,
+    `}`,
+  ].join("\n");
+};
+
+export const modelBoilerplate = (service: string) => {
+  const Provider = getServiceInPascalCase(service)
+  return [
+    `import {Schema,model} from "mongoose"`,
+    `import { ${Provider}ModelInterface } from "./${service}.interface"\n`,
+    `const schema = new Schema<${Provider}ModelInterface>({\n`,
+    `\t`,
+    `},{timestamps:true})\n`,
+    `const ${Provider}Model = model<${Provider}ModelInterface>("${Provider}",schema)`,
+    `export default ${Provider}Model`,
   ].join("\n");
 };

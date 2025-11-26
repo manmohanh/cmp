@@ -5,8 +5,17 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import fs from "fs";
 import path from "path";
-import { appBoilerplate, routerBoilerplate } from "./util/boilerplate";
+import { exec } from "child_process";
+import {
+  appBoilerplate,
+  interfaceBoilerplate,
+  modelBoilerplate,
+  routerBoilerplate,
+} from "./util/boilerplate";
+import { promisify } from "util";
 const log = console.log;
+
+const Exec = promisify(exec);
 
 const validateService = (service: string) => {
   if (!service || service.length === 0)
@@ -46,17 +55,19 @@ const copyFiles = (files: string[], inputPath: string, outputPath: string) => {
   });
 };
 
-const getBoilerplate = (file:string,service:string) => {
-  if(file === ".router.ts")
-    return routerBoilerplate(service)
-  return ""
-}
+const getBoilerplate = (file: string, service: string) => {
+  if (file === ".router.ts") return routerBoilerplate(service);
+  if (file === ".interface.ts") return interfaceBoilerplate(service);
+  if (file === ".model.ts") return modelBoilerplate(service);
+
+  return "";
+};
 
 const createFiles = (files: string[], service: string, srcPath: string) => {
   files.forEach((file) => {
     const filename = `${service}${file}`;
     const filepath = path.join(srcPath, filename);
-    fs.writeFileSync(filepath, getBoilerplate(file,service));
+    fs.writeFileSync(filepath, getBoilerplate(file, service));
   });
 };
 
@@ -126,6 +137,7 @@ const app = async () => {
     const filesListForCreate = [
       ".controller.ts",
       ".service.ts",
+      ".model.ts",
       ".interface.ts",
       ".enum.ts",
       ".middleware.ts",
@@ -143,7 +155,7 @@ const app = async () => {
     makeFolder(srcPath);
 
     // creating app.ts
-    
+
     fs.writeFileSync(
       appFilePath,
       appBoilerplate(serviceName, newPort),
@@ -160,11 +172,16 @@ const app = async () => {
     //creating required files for developement
     createFiles(filesListForCreate, serviceName, srcPath);
 
+    log(chalk.bgGreen.black.bold("Installing dependencies... Please wait"));
+    await Exec("npm install", { cwd: servicePath });
+
     log(
       chalk.bgYellow.black.bold(
         `Success - ${serviceName} created successfully !`
       )
     );
+
+    log(chalk.bgGreen.bold(`Browse service folder and write npm run dev`));
 
     exitApp();
   } catch (error) {
