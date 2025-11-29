@@ -184,7 +184,7 @@ const app = async () => {
     if (service === "pipeline") exitApp("pipeline service name not allowed");
 
     const serviceName = validateService(service);
-    const currentDir = process.cwd()
+    const currentDir = path.join(process.cwd(),"services")
     const appPath = __dirname;
     const rootPath = currentDir
     const pipelinePath = path.resolve(appPath, "../");
